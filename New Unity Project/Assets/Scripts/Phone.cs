@@ -18,6 +18,9 @@ public class Phone : MonoBehaviour
     public float audioMax;
     public float volumeStep;
 
+    public GameObject startScreen;
+    public GameObject gameScreen;
+
     void Start()
     {
         cameraContainer = new GameObject("Camera Container");
@@ -25,6 +28,9 @@ public class Phone : MonoBehaviour
         transform.SetParent(cameraContainer.transform);
 
         gyroEnabled = EnabledGyro();
+
+        gameScreen.SetActive(false);
+        startScreen.SetActive(true);
     }
 
     private bool EnabledGyro()
@@ -94,5 +100,11 @@ public class Phone : MonoBehaviour
             }
         }
         source = null;
+    }
+
+    public void Begin()
+    {
+        startScreen.SetActive(false);
+        gameScreen.SetActive(true);
     }
 }

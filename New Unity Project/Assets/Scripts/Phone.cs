@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class Phone : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class Phone : MonoBehaviour
     private Quaternion rot;
 
     GameObject source;
+
     AudioSource audio;
     public string RaycastReturn;
 
@@ -20,6 +22,13 @@ public class Phone : MonoBehaviour
 
     public GameObject startScreen;
     public GameObject gameScreen;
+
+    public GameObject sources;
+    GameObject sourceContainer;
+    Touch touch;
+    bool touching;
+    Quaternion sourceQaut;
+    Quaternion cameraXRot;
 
     void Start()
     {
@@ -31,7 +40,10 @@ public class Phone : MonoBehaviour
 
         gameScreen.SetActive(false);
         startScreen.SetActive(true);
+
+        sources.SetActive(false);
     }
+
 
     private bool EnabledGyro()
     {
@@ -40,7 +52,7 @@ public class Phone : MonoBehaviour
             gyro = Input.gyro;
             gyro.enabled = true;
 
-            cameraContainer.transform.rotation = Quaternion.Euler(90f, 90f, 0);
+            cameraContainer.transform.rotation = Quaternion.Euler(0, 0, 0);
             rot = new Quaternion(0, 0, 1, 0);
 
             return true;
@@ -52,7 +64,34 @@ public class Phone : MonoBehaviour
     {
         if(gyroEnabled)
         {
-            transform.localRotation = gyro.attitude * rot;
+            transform.localRotation = gyro.attitude;
+            cameraXRot = transform.rotation;
+        }
+
+        touch = Input.GetTouch(0);
+
+        if (gameScreen.activeSelf == true)
+        {
+            if (touch.phase == TouchPhase.Began)
+            {
+                ray();
+                touching = true;             
+                Debug.Log("start");
+            }
+
+            if (touch.phase == TouchPhase.Ended)
+            {
+                touching = false;
+                Debug.Log("ended");
+            }
+        }
+
+        if (touching == true)
+        {
+            sourceQaut = source.transform.parent.rotation;
+            
+            source.transform.parent.rotation = Quaternion.Euler(sourceQaut.eulerAngles + new Vector3()); 
+            Debug.Log(source.transform.parent.rotation);
         }
     }
 
@@ -69,7 +108,6 @@ public class Phone : MonoBehaviour
             RaycastReturn = hit.collider.gameObject.name;
             source = GameObject.Find(RaycastReturn);
             Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
-            Debug.Log("Did Hit");
             Debug.Log(source);
         }
     }
@@ -97,6 +135,7 @@ public class Phone : MonoBehaviour
             if (audio.volume > audioMin)
             {
                 audio.volume = audio.volume - volumeStep;
+                
             }
         }
         source = null;
@@ -106,5 +145,6 @@ public class Phone : MonoBehaviour
     {
         startScreen.SetActive(false);
         gameScreen.SetActive(true);
+        sources.SetActive(true);
     }
 }

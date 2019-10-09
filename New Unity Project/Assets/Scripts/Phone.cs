@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 public class Phone : MonoBehaviour
 {
@@ -11,9 +12,7 @@ public class Phone : MonoBehaviour
     private GameObject cameraContainer;
     private Quaternion rot;
 
-    GameObject source;
-
-    AudioSource audio;
+    private AudioSource audio;
     public string RaycastReturn;
 
     public float audioMin;
@@ -24,14 +23,21 @@ public class Phone : MonoBehaviour
     public GameObject gameScreen;
 
     public GameObject sources;
-    GameObject sourceContainer;
-    Touch touch;
+    private GameObject source;  
+    private GameObject sourceContainer;
+
+    private Touch touch;
     bool touching;
-    Quaternion sourceQaut;
-    Quaternion cameraXRot;
+
+    public GameObject pauseButton;
+    private Text pauseText;
+    public GameObject resetButton;
+    bool playing;
 
     void Start()
     {
+        pauseText = pauseButton.GetComponent<Text>();
+
         cameraContainer = new GameObject("Camera Container");
         cameraContainer.transform.position = transform.position;
         transform.SetParent(cameraContainer.transform);
@@ -42,8 +48,8 @@ public class Phone : MonoBehaviour
         startScreen.SetActive(true);
 
         sources.SetActive(false);
+        resetButton.SetActive(false);
     }
-
 
     private bool EnabledGyro()
     {
@@ -65,7 +71,6 @@ public class Phone : MonoBehaviour
         if(gyroEnabled)
         {
             transform.localRotation = gyro.attitude;
-            cameraXRot = transform.rotation;
         }
 
         touch = Input.GetTouch(0);
@@ -76,7 +81,7 @@ public class Phone : MonoBehaviour
             {
                 ray();
                 touching = true;             
-                Debug.Log("start");
+                Debug.Log("started");
             }
 
             if (touch.phase == TouchPhase.Ended)
@@ -88,10 +93,9 @@ public class Phone : MonoBehaviour
 
         if (touching == true)
         {
-            sourceQaut = source.transform.parent.rotation;
-            
-            source.transform.parent.rotation = Quaternion.Euler(sourceQaut.eulerAngles + new Vector3()); 
-            Debug.Log(source.transform.parent.rotation);
+            source.transform.parent.rotation = Quaternion.Euler(new Vector3(transform.rotation.x, 
+                                                                            source.transform.parent.rotation.y,
+                                                                            source.transform.parent.rotation.z));
         }
     }
 
@@ -146,5 +150,37 @@ public class Phone : MonoBehaviour
         startScreen.SetActive(false);
         gameScreen.SetActive(true);
         sources.SetActive(true);
+        playing = true;
+    }
+
+    public void PlayPause()
+    {  
+        if(playing == true)
+        {
+            Time.timeScale = 0.0f;
+            pauseText.text = "Play";
+            resetButton.SetActive(true);
+
+        }
+
+        if(playing == false)
+        {
+            Time.timeScale = 1.0f;
+            pauseText.text = "Pause";
+            resetButton.SetActive(false);
+        }
+
+        playing = !playing;
+    }
+
+    public void ResetPlease()
+    {
+        gameScreen.SetActive(false);
+        startScreen.SetActive(true);
+        sources.SetActive(false);
+        resetButton.SetActive(false);
+        playing = false;
+        pauseText.text = "Play";
+
     }
 }
